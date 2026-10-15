@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050907">
+<title>ROOTX | Hack Panel</title>
+<style>
+:root {
+  --green:#39ff78;
+  --bg:#050907;
+  --panel:#0c1510;
+  --border:#1b5130;
+  --text:#e1f5e7;
+  --muted:#8aa895;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,sans-serif;
+}
+header{
+  padding:23px 18px;background:#08110b;
+  border-bottom:1px solid var(--border);
+}
+.logo{font-size:27px;font-weight:900;color:var(--green)}
+.subtitle{font-size:11px;color:var(--muted);margin-top:7px}
+.status{color:var(--green);font-size:11px;margin-top:12px}
+nav{
+  display:flex;gap:8px;overflow-x:auto;padding:12px;
+  background:#080e0a;border-bottom:1px solid var(--border)
+}
+button,.tab{
+  cursor:pointer;font-weight:bold;border:1px solid var(--border);
+  background:#102017;color:var(--green);padding:11px 13px;
+  border-radius:8px;font-size:12px;white-space:nowrap
+}
+button:active{transform:scale(.98)}
+main{padding:16px;max-width:850px;margin:auto}
+h2{font-size:18px;margin:12px 0}
+h3{font-size:14px;color:var(--green)}
+p{line-height:1.5}
+.muted{color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{
+  background:var(--panel);border:1px solid var(--border);
+  padding:15px;border-radius:11px;margin-bottom:12px
+}
+.stat-number{font-size:25px;color:var(--green);font-weight:bold}
+input,textarea,select{
+  display:block;width:100%;margin:9px 0;padding:13px;
+  background:#050b07;color:var(--text);
+  border:1px solid var(--border);border-radius:8px;
+  font:14px Arial;outline:none
+}
+input:focus,textarea:focus{border-color:var(--green)}
+textarea{min-height:120px;resize:vertical}
+.primary{background:var(--green);color:#031007;border:none}
+.danger{color:#ff8a8a;border-color:#743333;background:#1a0b0b}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.note-title{font-size:15px;font-weight:bold;overflow-wrap:anywhere}
+.note-body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.tag{color:var(--green);font-size:11px;margin:8px 0}
+.hidden{display:none!important}
+footer{text-align:center;padding:25px;color:#567360;font-size:11px}
+a{color:var(--green)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ROOTX<span style="color:white">_</span></div>
+  <div class="subtitle">PERSONAL KNOWLEDGE TERMINAL</div>
+  <div class="status">● SISTEMA LOCAL ATIVO</div>
+</header>
+
+<nav>
+  <button onclick="showPage('home')">⌂ INÍCIO</button>
+  <button onclick="showPage('notes')">▤ INFORMAÇÕES</button>
+  <button onclick="showPage('add')">+ NOVA NOTA</button>
+  <button onclick="showPage('study')">⌘ ESTUDOS</button>
+</nav>
+
+<main>
+<section id="home">
+  <h2>Painel de controle</h2>
+  <p class="muted">Seu espaço pessoal para registrar, organizar e pesquisar conhecimentos.</p>
+
+  <div class="stats">
+    <div class="card">
+      <div class="muted">NOTAS SALVAS</div>
+      <div class="stat-number" id="total">0</div>
+    </div>
+    <div class="card">
+      <div class="muted">CATEGORIAS</div>
+      <div class="stat-number">06</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⌕ Pesquisa rápida</h3>
+    <input id="quickSearch" placeholder="Pesquisar informações salvas..."
+      oninput="renderNotes(this.value)">
+    <button onclick="showPage('notes')">ABRIR BASE DE DADOS</button>
+  </div>
+
+  <div class="card">
+    <h3>🌐 Pesquisar assuntos</h3>
+    <p class="muted">Encontre informações na internet sobre qualquer tema.</p>
+    <input id="webQuery" placeholder="Ex.: aprender JavaScript">
+    <button class="primary" onclick="searchWeb()">PESQUISAR NA WEB ↗</button>
+  </div>
+
+  <div class="card">
+    <h3>▣ Últimas informações</h3>
+    <div id="recent"></div>
+  </div>
+</section>
+
+<section id="notes" class="hidden">
+  <h2>Base de conhecimento</h2>
+  <input id="filter" placeholder="Buscar por título, texto ou categoria..."
+    oninput="renderNotes(this.value)">
+  <select id="categoryFilter" onchange="renderNotes()">
+    <option value="">Todas as categorias</option>
+    <option>Programação</option>
+    <option>Tecnologia</option>
+    <option>Estudos</option>
+    <option>Projetos</option>
+    <option>Ideias</option>
+    <option>Outros</option>
+  </select>
+  <div id="noteList"></div>
+</section>
+
+<section id="add" class="hidden">
+  <h2>Registrar informação</h2>
+  <div class="card">
+    <form id="noteForm">
+      <label for="title">Título</label>
+      <input id="title" required maxlength="100"
+        placeholder="Nome da informação">
+
+      <label for="category">Categoria</label>
+      <select id="category">
+        <option>Programação</option>
+        <option>Tecnologia</option>
+        <option>Estudos</option>
+        <option>Projetos</option>
+        <option>Ideias</option>
+        <option>Outros</option>
+      </select>
+
+      <label for="content">Conteúdo</label>
+      <textarea id="content" required maxlength="20000"
+        placeholder="Escreva aqui tudo que deseja guardar..."></textarea>
+
+      <button class="primary" type="submit">SALVAR INFORMAÇÃO</button>
+    </form>
+  </div>
+</section>
+
+<section id="study" class="hidden">
+  <h2>Central de estudos</h2>
+  <div class="card">
+    <h3>⌘ Programação</h3>
+    <p class="muted">Pesquise tutoriais, linguagens, códigos e documentação.</p>
+    <button onclick="presetSearch('curso de programação para iniciantes')">APRENDER PROGRAMAÇÃO</button>
+  </div>
+  <div class="card">
+    <h3>◈ Segurança digital</h3>
+    <p class="muted">Aprenda proteção de contas, privacidade e segurança ética.</p>
+    <button onclick="presetSearch('fundamentos de cibersegurança para iniciantes')">ESTUDAR SEGURANÇA</button>
+  </div>
+  <div class="card">
+    <h3>▤ Conhecimentos gerais</h3>
+    <p class="muted">Pesquise história, ciências, matemática e outros assuntos.</p>
+    <button onclick="presetSearch('materiais de estudo gratuitos')">EXPLORAR CONHECIMENTOS</button>
+  </div>
+  <div class="card">
+    <h3>Como funciona?</h3>
+    <p>1. Escolha um tema.</p>
+    <p>2. Abra os resultados da pesquisa.</p>
+    <p>3. Registre o que aprendeu na base de conhecimento.</p>
+  </div>
+</section>
+</main>
+
+<footer>ROOTX SYSTEM · V1.0 · KNOWLEDGE IS POWER</footer>
+
+<script>
+const STORAGE_KEY = "rootx_knowledge_v1";
+let notes = [];
+
+try {
+  notes = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  if (!Array.isArray(notes)) notes = [];
+} catch(e) {
+  notes = [];
+}
+
+function saveData(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    return true;
+  } catch(e) {
+    alert("Não foi possível salvar. Verifique o espaço disponível no navegador.");
+    return false;
+  }
+}
+
+function showPage(id){
+  document.querySelectorAll("main section").forEach(s =>
+    s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  if(id === "notes") renderNotes();
+  if(id === "home") renderHome();
+  window.scrollTo(0,0);
+}
+
+document.getElementById("noteForm").addEventListener("submit",function(e){
+  e.preventDefault();
+
+  const note = {
+    id: Date.now().toString() + Math.random().toString(36).slice(2,7),
+    title: document.getElementById("title").value.trim(),
+    category: document.getElementById("category").value,
+    content: document.getElementById("content").value.trim(),
+    date: new Date().toLocaleString("pt-BR")
+  };
+
+  if(!note.title || !note.content) return;
+  notes.unshift(note);
+
+  if(saveData()){
+    this.reset();
+    renderHome();
+    showPage("notes");
+  } else {
+    notes.shift();
+  }
+});
+
+function safe(text){
+  return String(text).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function renderNotes(query){
+  const q = (query !== undefined ? query :
+    document.getElementById("filter").value).toLowerCase();
+  const cat = document.getElementById("categoryFilter").value;
+
+  const found = notes.filter(n =>
+    (n.title+" "+n.content+" "+n.category).toLowerCase().includes(q) &&
+    (!cat || n.category === cat)
+  );
+
+  document.getElementById("noteList").innerHTML = found.length
+    ? found.map(n => `
+      <article class="card">
+        <div class="note-title">${safe(n.title)}</div>
+        <div class="tag">${safe(n.category)} · ${safe(n.date)}</div>
+        <div class="note-body">${safe(n.content)}</div>
+        <div class="actions">
+          <button onclick="copyNote('${n.id}')">COPIAR</button>
+          <button onclick="editNote('${n.id}')">EDITAR</button>
+          <button class="danger" onclick="deleteNote('${n.id}')">EXCLUIR</button>
+        </div>
+      </article>
+    `).join("")
+    : '<div class="card muted">Nenhuma informação encontrada.</div>';
+
+  document.getElementById("total").textContent = notes.length;
+}
+
+function renderHome(){
+  document.getElementById("total").textContent = notes.length;
+  const recent = notes.slice(0,3);
+  document.getElementById("recent").innerHTML = recent.length
+    ? recent.map(n => `<div class="card">
+        <strong>${safe(n.title)}</strong>
+        <p class="muted">${safe(n.category)} · ${safe(n.date)}</p>
+      </div>`).join("")
+    : '<p class="muted">Suas informações aparecerão aqui.</p>';
+}
+
+function findNote(id){
+  return notes.find(n => n.id === id);
+}
+
+function copyNote(id){
+  const n = findNote(id);
+  if(!n) return;
+  const text = n.title + "\n" + n.category + "\n\n" + n.content;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(()=>alert("Informação copiada!"))
+      .catch(()=>prompt("Copie o texto:",text));
+  } else {
+    prompt("Copie o texto:",text);
+  }
+}
+
+function editNote(id){
+  const n = findNote(id);
+  if(!n) return;
+  const title = prompt("Editar título:",n.title);
+  if(title === null) return;
+  const content = prompt("Editar conteúdo:",n.content);
+  if(content === null) return;
+
+  n.title = title.trim() || n.title;
+  n.content = content;
+  n.date = new Date().toLocaleString("pt-BR");
+  if(saveData()) renderNotes();
+}
+
+function deleteNote(id){
+  const n = findNote(id);
+  if(!n || !confirm("Excluir esta informação?")) return;
+  const old = notes;
+  notes = notes.filter(x => x.id !== id);
+  if(saveData()){
+    renderNotes();
+    renderHome();
+  } else notes = old;
+}
+
+function searchWeb(){
+  const q = document.getElementById("webQuery").value.trim();
+  if(!q) return alert("Digite um assunto para pesquisar.");
+  window.open("https://www.google.com/search?q="+encodeURIComponent(q),"_blank");
+}
+
+function presetSearch(q){
+  window.open("https://www.google.com/search?q="+encodeURIComponent(q),"_blank");
+}
+
+renderHome();
+renderNotes("");
+</script>
+</body>
+</html>
